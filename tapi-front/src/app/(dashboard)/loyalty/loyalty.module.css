@@ -1,0 +1,330 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3xl);
+}
+
+.title {
+  font-family: var(--font-headline-lg);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.pageLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3xl);
+}
+
+@media (min-width: 1024px) {
+  .pageLayout {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+@media (min-width: 1280px) {
+  .pageLayout {
+    grid-template-columns: 380px 1fr;
+  }
+}
+
+.sectionTitle {
+  font-family: var(--font-headline-sm);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-xl);
+  font-weight: 600;
+}
+
+.activeProgramCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.programInfo h3 {
+  font-family: var(--font-headline-sm);
+  margin-bottom: var(--space-xs);
+  color: var(--color-text-primary);
+}
+
+.programMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin-top: var(--space-md);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.metaItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rewardsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+}
+
+@media (min-width: 768px) {
+  .rewardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.rewardCard {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  transition: border-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+}
+
+.rewardCard:hover {
+  border-color: var(--color-border-strong);
+}
+
+.rewardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-sm);
+}
+
+.rewardTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+.rewardCost {
+  color: var(--color-secondary);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.rewardDesc {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin-bottom: var(--space-xl);
+  flex-grow: 1;
+}
+
+.rewardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+}
+
+.badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  background-color: transparent;
+  border: 1px solid currentColor;
+}
+
+.badgeActive {
+  color: var(--color-success);
+}
+
+.badgeInactive {
+  color: var(--color-text-muted);
+}
+
+.editButton {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color var(--transition-fast);
+}
+
+.editButton:hover {
+  color: var(--color-primary);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 25, 41, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+.modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  border: 1px solid var(--color-border);
+}
+
+.modalTitle {
+  font-family: var(--font-headline-sm);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-lg);
+  font-weight: 600;
+}
+
+.formGroup {
+  margin-bottom: var(--space-lg);
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  appearance: none;
+}
+
+/* Remove default spin buttons for number inputs */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.selectWrapper {
+  position: relative;
+  display: block;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--color-text-muted);
+}
+
+/* Custom Toggle Switch */
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: var(--space-sm);
+  margin-top: 8px;
+}
+
+.toggleTrack {
+  width: 40px;
+  height: 24px;
+  background-color: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.toggleTrackActive {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.toggleTrackActive .toggleThumb {
+  transform: translateX(16px);
+}
+
+.toggleLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.actionBtnDelete {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.actionBtnDelete:hover {
+  color: var(--color-error);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}

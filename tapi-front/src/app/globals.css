@@ -1,0 +1,157 @@
+/* ── TAPI Design System ─────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* ── Colors: Primary ──────── */
+  --color-primary: #1B3A5C;
+  --color-primary-hover: #153050;
+  --color-primary-light: #2B5A8C;
+  --color-primary-lightest: #DBEAFE;
+  --color-on-primary: #FFFFFF;
+
+  /* ── Colors: Secondary (Orange) ──── */
+  --color-secondary: #E88B2E;
+  --color-secondary-hover: #D47A1F;
+  --color-secondary-light: #F5A94D;
+  --color-secondary-lightest: #FEF3C7;
+  --color-on-secondary: #FFFFFF;
+
+  /* ── Colors: Tertiary (Green) ──── */
+  --color-success: #16A34A;
+  --color-success-light: #DCFCE7;
+
+  /* ── Colors: Error ──── */
+  --color-error: #DC2626;
+  --color-error-light: #FEE2E2;
+
+  /* ── Colors: Warning ──── */
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+
+  /* ── Colors: Surfaces (Light Mode Defaults) ──── */
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-dim: #F0ECE4;
+  --color-surface-container: #F5F0E8;
+  --color-surface-elevated: #FAF7F2;
+
+  /* ── Colors: Text (Light Mode Defaults) ──── */
+  --color-text-primary: #0C1929;
+  --color-text-secondary: #4A4A5A;
+  --color-text-muted: #8A8A9A;
+  --color-text-on-dark: #FFFFFF;
+  --color-text-on-primary: #FFFFFF;
+
+  /* ── Colors: Borders ──── */
+  --color-border: rgba(27, 58, 92, 0.08);
+  --color-border-strong: rgba(27, 58, 92, 0.16);
+  --color-border-focus: rgba(232, 139, 46, 0.6);
+
+  /* ── Typography ──── */
+  --font-family: 'Inter', -apple-system, sans-serif;
+
+  --font-display-xl: 800 48px/1.1 var(--font-family);
+  --font-display-lg: 700 36px/1.15 var(--font-family);
+  --font-headline-lg: 700 28px/1.2 var(--font-family);
+  --font-headline-md: 600 22px/1.25 var(--font-family);
+  --font-headline-sm: 600 18px/1.3 var(--font-family);
+  --font-body-lg: 400 16px/1.6 var(--font-family);
+  --font-body-md: 400 14px/1.5 var(--font-family);
+  --font-label-lg: 600 14px/1.4 var(--font-family);
+  --font-label-md: 500 13px/1.3 var(--font-family);
+  --font-label-sm: 600 11px/1 var(--font-family);
+  --font-stat: 700 32px/1 var(--font-family);
+
+  /* ── Spacing ──── */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* ── Radii ──── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ──── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --shadow-focus: 0 0 0 3px rgba(232, 139, 46, 0.3);
+
+  /* ── Layout ──── */
+  --sidebar-width: 280px;
+  --topbar-height: 64px;
+  --container-max: 1280px;
+  --page-padding: 2rem;
+
+  /* ── Transitions ──── */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+/* ── Dark Mode Overrides ─────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ── Colors: Primary ──────── */
+    /* Adjusted for better contrast on dark bg */
+    --color-primary: #2B5A8C;
+    --color-primary-hover: #3A6FA6;
+    --color-primary-light: #1B3A5C; /* Inverted for depth */
+
+    /* ── Colors: Secondary (Orange) ──── */
+    --color-secondary: #F5A94D;
+    --color-secondary-hover: #E88B2E;
+
+    /* ── Colors: Surfaces (Dark Mode Defaults) ──── */
+    --color-bg: #0C1929;
+    --color-surface: #112236;
+    --color-surface-dim: #091320;
+    --color-surface-container: #152B44;
+    --color-surface-elevated: #1B3A5C;
+
+    /* ── Colors: Text (Dark Mode Defaults) ──── */
+    --color-text-primary: #F5F0E8;
+    --color-text-secondary: #D0CCC4;
+    --color-text-muted: #8A8A9A;
+    
+    /* ── Colors: Borders ──── */
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.16);
+
+    /* ── Shadows ──── */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ── Base Reset ─────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
