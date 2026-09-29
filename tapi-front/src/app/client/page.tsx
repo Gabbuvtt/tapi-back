@@ -18,16 +18,20 @@ export default function ClientViewPage() {
 
   const handleRatingClick = (selectedRating: number) => {
     setRating(selectedRating);
-    // Si son 4 o 5 estrellas, lo mandamos a Google Maps directo
-    if (selectedRating >= 4) {
-      window.open('https://g.page/r/tapi-example/review', '_blank');
-      setIsReviewSubmitted(true);
-    }
   };
 
-  const submitInternalFeedback = () => {
-    // Aquí iría el guardado en base de datos para que lo vea el dueño
-    console.log("Feedback interno guardado:", feedbackText, "Estrellas:", rating);
+  const submitFeedback = () => {
+    if (rating === 0) return; // Debe seleccionar al menos 1 estrella
+
+    // Simulación de guardado en base de datos interna de TAPI
+    console.log("Feedback guardado:", feedbackText, "Estrellas:", rating);
+    
+    // Filtro inteligente (Review Gating)
+    if (rating >= 4) {
+      // 4 o 5 estrellas: Se va a Google Maps
+      window.open('https://g.page/r/tapi-example/review', '_blank');
+    }
+    
     setIsReviewSubmitted(true);
   };
 
@@ -123,35 +127,38 @@ export default function ClientViewPage() {
             {!isReviewSubmitted ? (
               <>
                 <h3 className={styles.reviewTitle}>¿Cómo calificarías tu visita?</h3>
-                <div className="flex gap-2 my-2 justify-center">
+                <div className={styles.interactiveStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button
+                    <div
                       key={star}
                       onClick={() => handleRatingClick(star)}
-                      className="transition-transform hover:scale-110 focus:outline-none"
+                      className={styles.starWrapper}
                       style={{ color: star <= rating ? '#FBBC05' : 'rgba(255, 255, 255, 0.2)' }}
                     >
-                      <Star size={32} fill={star <= rating ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.5} />
-                    </button>
+                      <Star size={36} fill={star <= rating ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.5} />
+                    </div>
                   ))}
                 </div>
 
-                {rating > 0 && rating <= 3 && (
-                  <div className="w-full mt-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+                {rating > 0 && (
+                  <div className={styles.feedbackContainer}>
                     <p className={styles.reviewDesc}>
-                      Lamentamos que tu experiencia no haya sido perfecta. ¿Qué podemos mejorar?
+                      {rating >= 4 
+                        ? '¡Nos alegra mucho! ¿Quieres dejarnos un comentario adicional?'
+                        : 'Lamentamos que tu experiencia no haya sido perfecta. ¿Qué podemos mejorar?'
+                      }
                     </p>
                     <textarea 
-                      className="w-full bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.1)] rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[var(--color-secondary)] min-h-[80px]"
+                      className={styles.feedbackTextarea}
                       placeholder="Cuéntanos tu experiencia..."
                       value={feedbackText}
                       onChange={(e) => setFeedbackText(e.target.value)}
                     />
                     <button 
-                      onClick={submitInternalFeedback}
-                      className="bg-[rgba(255,255,255,0.1)] text-white w-full py-3 rounded-lg font-semibold hover:bg-[rgba(255,255,255,0.15)] transition-colors"
+                      onClick={submitFeedback}
+                      className={styles.submitBtn}
                     >
-                      Enviar Sugerencia
+                      Enviar Valoración
                     </button>
                   </div>
                 )}
@@ -161,8 +168,12 @@ export default function ClientViewPage() {
                 <div className="w-12 h-12 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Star fill="currentColor" size={24} />
                 </div>
-                <h3 className={styles.reviewTitle}>¡Gracias por tu reseña!</h3>
-                <p className={styles.reviewDesc}>Tu opinión nos ayuda muchísimo a mejorar.</p>
+                <h3 className={styles.reviewTitle}>
+                  {rating >= 4 ? '¡Gracias por tu reseña!' : '¡Gracias por ayudarnos a mejorar!'}
+                </h3>
+                <p className={styles.reviewDesc}>
+                  Tu opinión es fundamental para nosotros.
+                </p>
               </div>
             )}
           </div>

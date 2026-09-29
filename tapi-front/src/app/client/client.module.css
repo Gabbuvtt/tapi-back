@@ -160,10 +160,71 @@
   gap: var(--space-md);
 }
 
-.reviewStars {
+.interactiveStars {
   display: flex;
-  gap: 4px;
-  color: #FBBC05;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.starWrapper {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.starWrapper:hover {
+  transform: scale(1.1);
+}
+
+.feedbackContainer {
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feedbackTextarea {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  min-height: 80px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.feedbackTextarea:focus {
+  border-color: var(--color-secondary);
+}
+
+.submitBtn {
+  background-color: white;
+  color: black;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s, transform 0.1s;
+}
+.submitBtn:active {
+  transform: scale(0.98);
+}
+.submitBtn:hover {
+  background-color: #f0f0f0;
 }
 
 .reviewTitle {
