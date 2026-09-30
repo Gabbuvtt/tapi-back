@@ -206,35 +206,37 @@ export default function DashboardPage() {
 
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>Actividad Reciente</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Interacción</th>
-                <th>Cliente</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentActivity.length > 0 ? recentActivity.map((activity) => (
-                <tr key={activity.id}>
-                  <td>
-                    <div className="font-medium">{activity.action}</div>
-                    <div className="text-xs text-gray-500 mt-1">{activity.time}</div>
-                  </td>
-                  <td className="text-gray-600">{activity.source}</td>
-                  <td>
-                    <span className={`${styles.badge} ${styles.badgeSuccess}`}>
-                      {activity.status}
-                    </span>
-                  </td>
-                </tr>
-              )) : (
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
                 <tr>
-                  <td colSpan={3} className="text-center py-4 text-gray-500">No hay actividad reciente</td>
+                  <th>Interacción</th>
+                  <th>Cliente</th>
+                  <th>Estado</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentActivity.length > 0 ? recentActivity.map((activity) => (
+                  <tr key={activity.id}>
+                    <td>
+                      <div className="font-medium">{activity.action}</div>
+                      <div className="text-xs text-gray-500 mt-1">{activity.time}</div>
+                    </td>
+                    <td className="text-gray-600">{activity.source}</td>
+                    <td>
+                      <span className={`${styles.badge} ${styles.badgeSuccess}`}>
+                        {activity.status}
+                      </span>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={3} className="text-center py-4 text-gray-500">No hay actividad reciente</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </>

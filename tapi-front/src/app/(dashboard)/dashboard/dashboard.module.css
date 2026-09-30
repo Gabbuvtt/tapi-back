@@ -69,7 +69,6 @@
   }
 }
 
-/* Minimalist Stat Card */
 .statCard {
   background-color: transparent;
   border-radius: 0;
@@ -84,6 +83,19 @@
 .statCard:first-child {
   border-left: none;
   padding-left: 0;
+}
+
+@media (max-width: 639px) {
+  .statCard {
+    border-left: none;
+    padding-left: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-lg);
+  }
+  .statCard:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 }
 
 .statHeader {
@@ -177,9 +189,16 @@
   margin-left: 4px;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
 }
 
 .table th {

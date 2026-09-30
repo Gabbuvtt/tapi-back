@@ -96,6 +96,14 @@
   --transition-slow: 350ms ease;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --page-padding: 1rem;
+    --space-xl: 1.25rem;
+    --space-3xl: 2rem;
+  }
+}
+
 /* ── Dark Mode Overrides ─────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root {
