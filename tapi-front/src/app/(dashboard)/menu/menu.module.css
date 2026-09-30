@@ -1,7 +1,9 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-md);
   margin-bottom: var(--space-3xl);
 }
 
@@ -20,9 +22,15 @@
 
 .editorLayout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-3xl);
   min-height: 500px;
+}
+
+@media (min-width: 1024px) {
+  .editorLayout {
+    grid-template-columns: 240px 1fr;
+  }
 }
 
 .sidebar {

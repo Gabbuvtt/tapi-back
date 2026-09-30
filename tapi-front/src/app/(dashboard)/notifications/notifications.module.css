@@ -2,7 +2,9 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-md);
   margin-bottom: var(--space-3xl);
 }
 
@@ -46,6 +48,19 @@
 .statCard:first-child {
   border-left: none;
   padding-left: 0;
+}
+
+@media (max-width: 767px) {
+  .statCard {
+    border-left: none;
+    padding-left: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-lg);
+  }
+  .statCard:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 }
 
 .iconWrapper {
@@ -104,9 +119,16 @@
   font-weight: 600;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
 }
 
 .table th {

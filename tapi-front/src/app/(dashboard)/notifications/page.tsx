@@ -119,38 +119,40 @@ export default function NotificationsPage() {
 
       <div className={styles.tableSection}>
         <h2 className={styles.sectionTitle}>Historial de Campañas</h2>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nombre de Campaña</th>
-              <th>Tipo</th>
-              <th>Enviados</th>
-              <th>Aperturas</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {campaignsState.length > 0 ? campaignsState.map(camp => (
-              <tr key={camp.id}>
-                <td>
-                  <span className={styles.campaignName}>{camp.title}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${camp.type === 'Push' ? styles.badgePush : styles.badgeEmail}`}>
-                    {camp.type}
-                  </span>
-                </td>
-                <td style={{ color: 'var(--color-text-secondary)' }}>-</td>
-                <td style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>-</td>
-                <td style={{ color: 'var(--color-text-muted)' }}>{new Date(camp.created_at).toLocaleDateString()}</td>
-              </tr>
-            )) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={5} className="text-center py-4 text-gray-500">No tienes campañas creadas.</td>
+                <th>Nombre de Campaña</th>
+                <th>Tipo</th>
+                <th>Enviados</th>
+                <th>Aperturas</th>
+                <th>Fecha</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {campaignsState.length > 0 ? campaignsState.map(camp => (
+                <tr key={camp.id}>
+                  <td>
+                    <span className={styles.campaignName}>{camp.title}</span>
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${camp.type === 'Push' ? styles.badgePush : styles.badgeEmail}`}>
+                      {camp.type}
+                    </span>
+                  </td>
+                  <td style={{ color: 'var(--color-text-secondary)' }}>-</td>
+                  <td style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>-</td>
+                  <td style={{ color: 'var(--color-text-muted)' }}>{new Date(camp.created_at).toLocaleDateString()}</td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan={5} className="text-center py-4 text-gray-500">No tienes campañas creadas.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isModalOpen && (
