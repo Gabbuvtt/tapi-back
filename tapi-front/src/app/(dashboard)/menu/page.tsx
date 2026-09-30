@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, GripVertical, Image as ImageIcon, Trash2, Edit2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './menu.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 export default function MenuEditorPage() {
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -158,7 +159,7 @@ export default function MenuEditorPage() {
     setDragOverItem(null);
   };
 
-  if (isLoading) return <div>Cargando Menú...</div>;
+  if (isLoading) return <PageLoader text="Cargando Menú..." />;
 
   return (
     <>

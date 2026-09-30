@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Store, MapPin, Link as LinkIcon, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './settings.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 export default function SettingsPage() {
   const [storeData, setStoreData] = useState<any>(null);
@@ -106,7 +107,7 @@ export default function SettingsPage() {
     setIsSaving(false);
   };
 
-  if (isLoading) return <div>Cargando ajustes...</div>;
+  if (isLoading) return <PageLoader text="Cargando Ajustes..." />;
 
   return (
     <div className={styles.container}>

@@ -22,14 +22,14 @@
 
 .editorLayout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3xl);
   min-height: 500px;
 }
 
 @media (min-width: 1024px) {
   .editorLayout {
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 240px minmax(0, 1fr);
   }
 }
 
@@ -112,9 +112,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
   padding: var(--space-lg) 0;
   border-bottom: 1px solid var(--color-border);
   transition: opacity var(--transition-fast);
+}
+
+@media (max-width: 639px) {
+  .itemActions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: var(--space-xs);
+  }
 }
 
 .itemRow:last-child {

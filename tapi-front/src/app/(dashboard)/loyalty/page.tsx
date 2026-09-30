@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Settings, Users, ArrowRight, Edit2, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './loyalty.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 export default function LoyaltyPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +88,7 @@ export default function LoyaltyPage() {
     setIsSaving(false);
   };
 
-  if (isLoading) return <div>Cargando Programa...</div>;
+  if (isLoading) return <PageLoader text="Cargando Programa..." />;
 
   return (
     <>
@@ -97,7 +98,7 @@ export default function LoyaltyPage() {
 
       <div className={styles.pageLayout}>
         {/* Columna Izquierda: Ajustes del Programa */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <h2 className={styles.sectionTitle}>Reglas Actuales</h2>
           <div className={styles.activeProgramCard}>
             <div className={styles.programInfo}>
@@ -138,7 +139,7 @@ export default function LoyaltyPage() {
         </div>
 
         {/* Columna Derecha: Recompensas */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <h2 className={styles.sectionTitle}>Recompensa Final</h2>
           <div className={styles.rewardsGrid}>
             <div className={`${styles.rewardCard}`}>

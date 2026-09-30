@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Tag, Smartphone, MoreVertical } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './nfc.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 export default function NfcPage() {
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export default function NfcPage() {
     setIsSaving(false);
   };
 
-  if (isLoading) return <div>Cargando Etiquetas...</div>;
+  if (isLoading) return <PageLoader text="Cargando Etiquetas..." />;
 
   return (
     <>
@@ -93,7 +94,7 @@ export default function NfcPage() {
 
       <div className={styles.pageLayout}>
         {/* Columna Izquierda: Panel de Control NFC */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <h2 className={styles.sectionTitle}>Resumen de Red</h2>
           <div className={styles.sidebarCard}>
             <div className={styles.statBox}>
@@ -114,7 +115,7 @@ export default function NfcPage() {
         </div>
 
         {/* Columna Derecha: Tabla de Etiquetas */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <h2 className={styles.sectionTitle}>Etiquetas Configuradas</h2>
           <div className={styles.card}>
             <table className={styles.table}>

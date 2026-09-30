@@ -14,19 +14,19 @@
 
 .pageLayout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3xl);
 }
 
 @media (min-width: 1024px) {
   .pageLayout {
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 320px minmax(0, 1fr);
   }
 }
 
 @media (min-width: 1280px) {
   .pageLayout {
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 380px minmax(0, 1fr);
   }
 }
 

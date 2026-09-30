@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Mail, MessageSquare, Send } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './notifications.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 export default function NotificationsPage() {
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export default function NotificationsPage() {
     setIsSaving(false);
   };
 
-  if (isLoading) return <div>Cargando Campañas...</div>;
+  if (isLoading) return <PageLoader text="Cargando Campañas..." />;
 
   return (
     <>

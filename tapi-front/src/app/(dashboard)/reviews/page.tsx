@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './reviews.module.css';
+import PageLoader from '@/components/ui/PageLoader';
 
 function getBadgeClass(status: string) {
   switch(status) {
@@ -93,7 +94,7 @@ export default function ReviewsPage() {
     loadReviews();
   }, []);
 
-  if (isLoading) return <div>Cargando Reseñas...</div>;
+  if (isLoading) return <PageLoader text="Cargando Reseñas..." />;
 
   return (
     <>

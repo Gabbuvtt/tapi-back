@@ -192,7 +192,7 @@ export default function DashboardPage() {
                 ) : null}
               </AreaChart>
               {chartData.length === 0 && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--color-text-secondary)' }}>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                   Aún no hay datos NFC
                 </div>
               )}

@@ -23,7 +23,7 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: var(--space-xl);
   margin-bottom: var(--space-3xl);
 }
@@ -110,6 +110,8 @@
 
 .tableSection {
   background-color: transparent;
+  min-width: 0;
+  width: 100%;
 }
 
 .sectionTitle {
@@ -123,6 +125,7 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-sm);
 }
 
 .table {

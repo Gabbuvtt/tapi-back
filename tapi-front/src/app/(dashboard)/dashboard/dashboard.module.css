@@ -54,7 +54,7 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: var(--space-xl);
   margin-bottom: var(--space-3xl);
 }
@@ -142,7 +142,7 @@
 
 .contentGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3xl);
 }
 
@@ -158,6 +158,8 @@
   padding: 0;
   border: none;
   box-shadow: none;
+  min-width: 0;
+  width: 100%;
 }
 
 .cardTitle {
@@ -170,6 +172,7 @@
 .chartContainer {
   height: 320px;
   width: 100%;
+  position: relative;
 }
 
 .chartFooter {
@@ -195,6 +198,7 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-sm);
 }
 
 .table {
