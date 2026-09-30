@@ -51,6 +51,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           <div className={styles.logoFull}>
             <img src="/tapi-logo-corto.png" alt="TAPI Isotipo" className={styles.logoImage} />
           </div>
+          <button 
+            className="lg:hidden" 
+            onClick={onClose}
+            style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+          >
+            ✕
+          </button>
         </div>
         
         <nav className={styles.nav}>
@@ -71,7 +78,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         </nav>
 
         <div className={styles.footer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <Link href="/settings" className={styles.settingsBtn} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s', padding: '8px', borderRadius: '8px' }}>
+          <Link href="/settings" onClick={onClose} className={styles.settingsBtn} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s', padding: '8px', borderRadius: '8px' }}>
             <Settings size={18} />
             <span>Ajustes</span>
           </Link>

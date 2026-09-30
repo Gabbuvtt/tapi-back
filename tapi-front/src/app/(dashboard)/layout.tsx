@@ -30,7 +30,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .eq('owner_email', session.user.email)
         .single();
 
-      // Auto-crear tienda si es un usuario nuevo
+      // TODO: Para la Versión 2.0 (SaaS Abierto), aquí podríamos auto-crear la tienda 
+      // y mandarlos a pagar con Stripe. Por ahora, en Fase 1, es un sistema CERRADO B2B.
+      // El administrador (TAPI) debe crear la tienda manualmente en Supabase.
+      /*
       if (!store) {
         const slugBase = session.user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
         const { data: newStore } = await supabase.from('stores').insert({
@@ -43,6 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         store = newStore;
       }
+      */
 
       if (store) {
         setUserStore(store);
