@@ -48,6 +48,7 @@ export default function OnboardingPage() {
     setIsSaving(true);
     try {
       await supabase.from('stores').update({
+        name: formData.name,
         google_review_url: formData.google_review_url,
         primary_color: formData.primary_color,
         is_onboarded: true
@@ -91,8 +92,13 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className={styles.formGroup}>
               <div className={styles.inputBox}>
-                <label><Store size={16} /> Nombre de la Tienda (Solo lectura)</label>
-                <input type="text" value={formData.name} disabled className={styles.inputDisabled} />
+                <label><Store size={16} /> Nombre de la Tienda</label>
+                <input 
+                  type="text" 
+                  value={formData.name} 
+                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                  className={styles.input} 
+                />
               </div>
               <div className={styles.inputBox}>
                 <label><Palette size={16} /> Color Principal de la Marca</label>
