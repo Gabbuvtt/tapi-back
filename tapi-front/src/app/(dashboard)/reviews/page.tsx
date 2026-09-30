@@ -1,16 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './reviews.module.css';
-
-// Mock Data
-const reviews = [
-  { id: 1, name: 'Juan Pérez', rating: 5, comment: 'Excelente servicio, siempre vuelvo por el mejor café de la ciudad.', status: 'Google', date: 'Hace 2 horas' },
-  { id: 2, name: 'María López', rating: 4, comment: 'Muy buen café, ambiente agradable. Me gustaría que tuvieran más opciones veganas.', status: 'Aprobada', date: 'Hace 5 horas' },
-  { id: 3, name: 'Carlos R.', rating: 3, comment: 'El servicio podría mejorar un poco en horas pico.', status: 'Interna', date: 'Hace 1 día' },
-  { id: 4, name: 'Ana M.', rating: 5, comment: 'Los mejores postres, me encantó la tarta de manzana.', status: 'Pendiente', date: 'Hace 2 días' },
-];
 
 function getBadgeClass(status: string) {
   switch(status) {
@@ -22,6 +15,52 @@ function getBadgeClass(status: string) {
 }
 
 export default function ReviewsPage() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({ total: 0, average: 0, googleCount: 0 });
+
+  useEffect(() => {
+    async function loadReviews() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('owner_email', session.user.email)
+        .single();
+        
+      if (store) {
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select('*, customers(full_name)')
+          .eq('store_id', store.id)
+          .order('created_at', { ascending: false });
+          
+        if (reviewData) {
+          setReviews(reviewData);
+          
+          let sum = 0;
+          let googleC = 0;
+          reviewData.forEach(r => {
+            sum += r.rating;
+            if (r.status === 'Google') googleC++;
+          });
+          
+          setStats({
+            total: reviewData.length,
+            average: reviewData.length > 0 ? (sum / reviewData.length) : 0,
+            googleCount: googleC
+          });
+        }
+      }
+      setIsLoading(false);
+    }
+    loadReviews();
+  }, []);
+
+  if (isLoading) return <div>Cargando Reseñas...</div>;
+
   return (
     <>
       <div className={styles.header}>
@@ -31,17 +70,17 @@ export default function ReviewsPage() {
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
           <div className={styles.statLabel}>Total Reseñas</div>
-          <div className={styles.statValue}>89</div>
+          <div className={styles.statValue}>{stats.total}</div>
         </div>
         <div className={styles.statItem}>
           <div className={styles.statLabel}>Calificación Promedio</div>
           <div className={styles.statValue}>
-            4.7 <Star fill="var(--color-secondary)" color="var(--color-secondary)" size={28} />
+            {stats.average.toFixed(1)} <Star fill="var(--color-secondary)" color="var(--color-secondary)" size={28} />
           </div>
         </div>
         <div className={styles.statItem}>
           <div className={styles.statLabel}>Enviadas a Google</div>
-          <div className={styles.statValue}>52</div>
+          <div className={styles.statValue}>{stats.googleCount}</div>
         </div>
       </div>
 
@@ -65,14 +104,14 @@ export default function ReviewsPage() {
       </div>
 
       <div className={styles.reviewsList}>
-        {reviews.map(review => (
+        {reviews.length > 0 ? reviews.map(review => (
           <div key={review.id} className={styles.reviewCard}>
             <div className={styles.reviewHeader}>
               <div className={styles.userInfo}>
-                <div className={styles.avatar}>{review.name[0]}</div>
+                <div className={styles.avatar}>{(review.customers?.full_name || 'A')[0]}</div>
                 <div>
-                  <div className={styles.userName}>{review.name}</div>
-                  <div className={styles.date}>{review.date}</div>
+                  <div className={styles.userName}>{review.customers?.full_name || 'Anónimo'}</div>
+                  <div className={styles.date}>{new Date(review.created_at).toLocaleDateString()}</div>
                 </div>
               </div>
               <span className={`${styles.badge} ${getBadgeClass(review.status)}`}>
@@ -93,7 +132,9 @@ export default function ReviewsPage() {
             
             <p className={styles.comment}>{review.comment}</p>
           </div>
-        ))}
+        )) : (
+          <div className="text-center py-10 text-gray-400">Aún no hay reseñas registradas.</div>
+        )}
       </div>
     </>
   );

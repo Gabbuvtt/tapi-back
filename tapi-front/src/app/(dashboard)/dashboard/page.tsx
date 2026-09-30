@@ -1,24 +1,12 @@
 'use client';
 
-import React from 'react';
-import { 
-  TrendingUp, 
-  Star,
-  Activity,
-  ThumbsUp,
-  RefreshCcw,
-  Tag,
-  ChevronDown
-} from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  ResponsiveContainer,
-  Tooltip
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, ChevronDown } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
+import { supabase } from '@/lib/supabase';
 import styles from './dashboard.module.css';
 
-// Mock Data
+// Mock Data para el gráfico (hasta que se implemente tracking de taps por fecha)
 const chartData = [
   { name: '1', scans: 12 }, { name: '2', scans: 19 }, { name: '3', scans: 15 },
   { name: '4', scans: 22 }, { name: '5', scans: 25 }, { name: '6', scans: 18 },
@@ -27,13 +15,60 @@ const chartData = [
   { name: '13', scans: 95 }, { name: '14', scans: 112 }, { name: '15', scans: 130 },
 ];
 
-const recentActivity = [
-  { id: 1, action: 'Sello de fidelidad sumado', source: '#NFC-04 Terraza', status: 'Verificado', time: 'Hace 4 min' },
-  { id: 2, action: 'Reseña 5★ Google', source: '#NFC-01 Barra', status: 'Verificado', time: 'Hace 12 min' },
-  { id: 3, action: 'Canje de café espresso', source: '#NFC-02 Mostrador', status: 'Verificado', time: 'Hace 45 min' },
-];
-
 export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    totalTaps: 0,
+    customers: 0,
+  });
+  
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadDashboard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('owner_email', session.user.email)
+        .single();
+        
+      if (store) {
+        // Fetch loyalty cards para sumar todos los sellos (Taps Totales)
+        const { data: cards } = await supabase
+          .from('loyalty_cards')
+          .select('stamps_count, customers(full_name)')
+          .eq('store_id', store.id);
+          
+        let taps = 0;
+        let activityList: any[] = [];
+        
+        if (cards) {
+          cards.forEach((card: any, idx) => {
+            taps += card.stamps_count || 0;
+            if (card.stamps_count > 0) {
+              activityList.push({
+                id: idx,
+                action: 'Sello de fidelidad sumado',
+                source: card.customers?.full_name || 'Cliente anónimo',
+                status: 'Verificado',
+                time: 'Reciente'
+              });
+            }
+          });
+        }
+        
+        setStats({
+          totalTaps: taps,
+          customers: cards ? cards.length : 0
+        });
+        setRecentActivity(activityList.slice(0, 5)); // Últimos 5
+      }
+    }
+    loadDashboard();
+  }, []);
+
   return (
     <>
       <div className={styles.pageHeader}>
@@ -53,23 +88,23 @@ export default function DashboardPage() {
       <div className={styles.statsGrid}>
         <StatCard 
           title="Taps NFC Totales" 
-          value="14,820" 
+          value={stats.totalTaps.toString()} 
           trend="+18.4%" 
         />
         <StatCard 
           title="Reviews Google" 
           value="4.9" 
-          trend="+342 reseñas" 
+          trend="Próximamente" 
         />
         <StatCard 
-          title="Retención a 30 días" 
-          value="68.2%" 
-          trend="+2.1%" 
+          title="Clientes Únicos" 
+          value={stats.customers.toString()} 
+          trend="Nuevos clientes" 
         />
         <StatCard 
           title="Canjes" 
-          value="1,280" 
-          trend="+15.5%" 
+          value="0" 
+          trend="Próximamente" 
         />
       </div>
 
@@ -117,12 +152,12 @@ export default function DashboardPage() {
             <thead>
               <tr>
                 <th>Interacción</th>
-                <th>Terminal</th>
+                <th>Cliente</th>
                 <th>Estado</th>
               </tr>
             </thead>
             <tbody>
-              {recentActivity.map((activity) => (
+              {recentActivity.length > 0 ? recentActivity.map((activity) => (
                 <tr key={activity.id}>
                   <td>
                     <div className="font-medium">{activity.action}</div>
@@ -135,7 +170,11 @@ export default function DashboardPage() {
                     </span>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={3} className="text-center py-4 text-gray-500">No hay actividad reciente</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

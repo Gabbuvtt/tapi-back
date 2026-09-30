@@ -1,38 +1,103 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Store, MapPin, Link as LinkIcon, Save } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import styles from './settings.module.css';
 
 export default function SettingsPage() {
+  const [storeData, setStoreData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Form states
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [googleUrl, setGoogleUrl] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('owner_email', session.user.email)
+        .single();
+        
+      if (data) {
+        setStoreData(data);
+        setName(data.name || '');
+        setAddress('Av. Principal 123, Centro'); // Placeholder, since it's not in DB yet
+        setGoogleUrl(data.google_review_url || '');
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    
+    try {
+      const { error } = await supabase
+        .from('stores')
+        .update({
+          name: name,
+          google_review_url: googleUrl
+        })
+        .eq('id', storeData.id);
+
+      if (error) throw error;
+      
+      alert('¡Ajustes guardados con éxito!');
+      window.location.reload(); // Para que el Topbar se actualice
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar los ajustes.');
+    }
+    
+    setIsSaving(false);
+  };
+
+  if (isLoading) return <div>Cargando ajustes...</div>;
+
   return (
-    <div className="max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-[var(--color-primary)] mb-1 tracking-tight">Ajustes del Negocio</h1>
-        <p className="text-gray-500">Configura la información pública de tu comercio</p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Ajustes del Negocio</h1>
+        <p className={styles.subtitle}>Configura la información pública de tu comercio</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-        <div className="flex items-center gap-6 mb-8">
-          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 cursor-pointer hover:bg-gray-50">
+      <div className={styles.card}>
+        <div className={styles.logoSection}>
+          <div className={styles.logoPlaceholder}>
             <Store size={32} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Logo del Comercio</h3>
-            <p className="text-sm text-gray-500 mb-3">Recomendado: 512x512px. JPG o PNG.</p>
+            <h3 className={styles.logoTitle}>Logo del Comercio</h3>
+            <p className={styles.logoSubtitle}>Recomendado: 512x512px. JPG o PNG.</p>
             <Button variant="outline" size="sm">Subir Imagen</Button>
           </div>
         </div>
 
-        <form className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+        <form className="space-y-6" onSubmit={handleSave}>
+          <div className={styles.formGrid}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Negocio</label>
-              <input type="text" defaultValue="Café El Aroma" className="w-full h-11 px-4 rounded-lg border border-gray-200 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)]" />
+              <label className={styles.label}>Nombre del Negocio</label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                className={styles.input} 
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-              <select className="w-full h-11 px-4 rounded-lg border border-gray-200 focus:outline-none focus:border-[var(--color-secondary)]">
+              <label className={styles.label}>Categoría</label>
+              <select className={styles.select}>
                 <option>Cafetería</option>
                 <option>Restaurante</option>
                 <option>Bar</option>
@@ -40,21 +105,31 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"><MapPin size={16}/> Dirección Física</label>
-            <input type="text" defaultValue="Av. Principal 123, Centro" className="w-full h-11 px-4 rounded-lg border border-gray-200 focus:outline-none focus:border-[var(--color-secondary)]" />
+          <div className={styles.formGroup}>
+            <label className={styles.label}><MapPin size={16}/> Dirección Física</label>
+            <input 
+              type="text" 
+              value={address} 
+              onChange={e => setAddress(e.target.value)} 
+              className={styles.input} 
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"><LinkIcon size={16}/> Link de Google Maps</label>
-            <input type="url" defaultValue="https://maps.google.com/..." className="w-full h-11 px-4 rounded-lg border border-gray-200 focus:outline-none focus:border-[var(--color-secondary)] text-blue-600" />
-            <p className="text-xs text-gray-500 mt-2">Este link se utilizará para redirigir a los clientes a dejar reseñas 5 estrellas.</p>
+          <div className={styles.formGroup}>
+            <label className={styles.label}><LinkIcon size={16}/> Link de Google Maps</label>
+            <input 
+              type="url" 
+              value={googleUrl} 
+              onChange={e => setGoogleUrl(e.target.value)} 
+              className={styles.input} 
+            />
+            <p className={styles.hint}>Este link se utilizará para redirigir a los clientes a dejar reseñas 5 estrellas.</p>
           </div>
           
-          <hr className="border-gray-100 my-8" />
+          <hr className={styles.divider} />
           
-          <div className="flex justify-end">
-            <Button leftIcon={<Save size={18} />}>Guardar Cambios</Button>
+          <div className={styles.actions}>
+            <Button type="submit" leftIcon={<Save size={18} />} isLoading={isSaving}>Guardar Cambios</Button>
           </div>
         </form>
       </div>

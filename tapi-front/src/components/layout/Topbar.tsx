@@ -5,7 +5,7 @@ import { Menu, Search, ChevronDown } from 'lucide-react';
 import styles from './Topbar.module.css';
 import { useAuthStore } from '@/lib/stores/authStore';
 
-export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
+export function Topbar({ onMenuClick, storeName = 'TAPI' }: { onMenuClick: () => void, storeName?: string }) {
   const user = useAuthStore(state => state.user);
 
   const initials = user?.full_name 
@@ -21,7 +21,7 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         
         <div className={styles.contextSelector}>
           <div className={styles.locationName}>
-            Café El Aroma <ChevronDown size={14} className="text-gray-400" />
+            {storeName} <ChevronDown size={14} className="text-gray-400" />
           </div>
           <div className={styles.systemStatus}>
             <span className={styles.pulseDot}></span>

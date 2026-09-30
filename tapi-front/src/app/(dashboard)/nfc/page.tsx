@@ -1,21 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Plus, Tag, Smartphone, MoreVertical } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './nfc.module.css';
 
-// Mock Data
-const tags = [
-  { id: 1, name: 'Mesa 1', type: 'Sticker', status: 'Activa', scans: 145, lastScan: 'Hace 2 horas' },
-  { id: 2, name: 'Mesa 2', type: 'Display', status: 'Activa', scans: 89, lastScan: 'Hace 5 horas' },
-  { id: 3, name: 'Barra Principal', type: 'Stand', status: 'Inactiva', scans: 12, lastScan: 'Hace 3 días' },
-];
-
 export default function NfcPage() {
+  const [storeId, setStoreId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<any>(null);
-  const [tagsState, setTagsState] = useState(tags);
+  const [tagsState, setTagsState] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    async function loadNfc() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('owner_email', session.user.email)
+        .single();
+        
+      if (store) {
+        setStoreId(store.id);
+        const { data: tags } = await supabase
+          .from('nfc_tags')
+          .select('*')
+          .eq('store_id', store.id)
+          .order('created_at', { ascending: false });
+          
+        if (tags) {
+          setTagsState(tags);
+        }
+      }
+      setIsLoading(false);
+    }
+    loadNfc();
+  }, []);
+
+  const handleSave = async () => {
+    if (!editingTag.name) return;
+    setIsSaving(true);
+    
+    try {
+      if (editingTag.id) {
+        await supabase.from('nfc_tags').update({
+          name: editingTag.name,
+          location: editingTag.location,
+          status: editingTag.status
+        }).eq('id', editingTag.id);
+        
+        setTagsState(tagsState.map(t => t.id === editingTag.id ? { ...t, ...editingTag } : t));
+      } else {
+        const { data } = await supabase.from('nfc_tags').insert({
+          store_id: storeId,
+          name: editingTag.name,
+          location: editingTag.location || 'Sticker',
+          tag_identifier: `NFC-${Math.floor(Math.random() * 10000)}`, // Generado auto en MVP
+          status: 'active'
+        }).select().single();
+        
+        if (data) setTagsState([data, ...tagsState]);
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert('Error al guardar la etiqueta');
+    }
+    setIsSaving(false);
+  };
+
+  if (isLoading) return <div>Cargando Etiquetas...</div>;
 
   return (
     <>
@@ -25,7 +84,7 @@ export default function NfcPage() {
           <p className={styles.subtitle}>Gestiona los puntos físicos de escaneo en tu local</p>
         </div>
         <Button leftIcon={<Plus size={18} />} variant="secondary" onClick={() => {
-          setEditingTag({ name: '', type: 'Sticker', status: 'Activa' });
+          setEditingTag({ name: '', location: 'Sticker', status: 'active' });
           setIsModalOpen(true);
         }}>
           Vincular Etiqueta
@@ -40,14 +99,14 @@ export default function NfcPage() {
             <div className={styles.statBox}>
               <div className={styles.statIcon}><Tag size={20} /></div>
               <div>
-                <div className={styles.statValue}>12</div>
+                <div className={styles.statValue}>{tagsState.length}</div>
                 <div className={styles.statLabel}>Etiquetas Vinculadas</div>
               </div>
             </div>
             <div className={styles.statBox}>
               <div className={styles.statIcon} style={{ background: 'rgba(22, 163, 74, 0.1)', color: 'var(--color-success)' }}><Smartphone size={20} /></div>
               <div>
-                <div className={styles.statValue}>246</div>
+                <div className={styles.statValue}>0</div>
                 <div className={styles.statLabel}>Escaneos este mes</div>
               </div>
             </div>
@@ -70,18 +129,18 @@ export default function NfcPage() {
                 </tr>
               </thead>
               <tbody>
-                {tagsState.map(tag => (
+                {tagsState.length > 0 ? tagsState.map(tag => (
                   <tr key={tag.id}>
                     <td className={styles.nameCell}>
                       <div className={styles.iconWrapper}><Tag size={16} /></div>
                       <span className="font-semibold">{tag.name}</span>
                     </td>
-                    <td>{tag.type}</td>
-                    <td className="font-medium text-[var(--color-primary)]">{tag.scans}</td>
-                    <td className="text-sm text-gray-500">{tag.lastScan}</td>
+                    <td>{tag.location}</td>
+                    <td className="font-medium text-[var(--color-primary)]">0</td>
+                    <td className="text-sm text-gray-500">Nuevo</td>
                     <td>
-                      <span className={`${styles.badge} ${tag.status === 'Activa' ? styles.badgeActive : styles.badgeInactive}`}>
-                        {tag.status}
+                      <span className={`${styles.badge} ${tag.status === 'active' ? styles.badgeActive : styles.badgeInactive}`}>
+                        {tag.status === 'active' ? 'Activa' : 'Inactiva'}
                       </span>
                     </td>
                     <td className="text-right">
@@ -98,7 +157,11 @@ export default function NfcPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4 text-gray-500">No hay etiquetas vinculadas.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -127,12 +190,12 @@ export default function NfcPage() {
               <label className={styles.label}>Formato</label>
               <select 
                 className={styles.input}
-                value={editingTag?.type || 'Sticker'}
-                onChange={(e) => setEditingTag({...editingTag, type: e.target.value})}
+                value={editingTag?.location || 'Sticker'}
+                onChange={(e) => setEditingTag({...editingTag, location: e.target.value})}
               >
-                <option>Sticker</option>
-                <option>Display de Mesa</option>
-                <option>Cartelera</option>
+                <option value="Sticker">Sticker</option>
+                <option value="Display">Display de Mesa</option>
+                <option value="Cartelera">Cartelera</option>
               </select>
             </div>
             
@@ -141,13 +204,13 @@ export default function NfcPage() {
                 <label className={styles.label}>Estado</label>
                 <div 
                   className={styles.toggleWrapper}
-                  onClick={() => setEditingTag({...editingTag, status: editingTag?.status === 'Activa' ? 'Inactiva' : 'Activa'})}
+                  onClick={() => setEditingTag({...editingTag, status: editingTag?.status === 'active' ? 'inactive' : 'active'})}
                 >
-                  <div className={`${styles.toggleTrack} ${editingTag?.status === 'Activa' ? styles.toggleTrackActive : ''}`}>
+                  <div className={`${styles.toggleTrack} ${editingTag?.status === 'active' ? styles.toggleTrackActive : ''}`}>
                     <div className={styles.toggleThumb}></div>
                   </div>
                   <span className={styles.toggleLabel}>
-                    {editingTag?.status}
+                    {editingTag?.status === 'active' ? 'Activa' : 'Inactiva'}
                   </span>
                 </div>
               </div>
@@ -155,14 +218,7 @@ export default function NfcPage() {
 
             <div className={styles.modalActions}>
               <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button variant="secondary" onClick={() => {
-                if (editingTag.id) {
-                  setTagsState(tagsState.map(t => t.id === editingTag.id ? editingTag : t));
-                } else {
-                  setTagsState([...tagsState, { ...editingTag, id: Date.now(), scans: 0, lastScan: 'Nuevo' }]);
-                }
-                setIsModalOpen(false);
-              }}>
+              <Button variant="secondary" onClick={handleSave} isLoading={isSaving}>
                 Guardar
               </Button>
             </div>

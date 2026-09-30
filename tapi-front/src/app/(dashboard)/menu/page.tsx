@@ -1,84 +1,162 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Plus, GripVertical, Image as ImageIcon, Trash2, Edit2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import styles from './menu.module.css';
 
-const categories = ['Bebidas Calientes', 'Postres', 'Snacks'];
-const initialItems = [
-  { id: 1, name: 'Latte Artesanal', price: '3.50', category: 'Bebidas Calientes', available: true },
-  { id: 2, name: 'Cappuccino Clásico', price: '3.00', category: 'Bebidas Calientes', available: true },
-  { id: 3, name: 'Brownie de Chocolate', price: '4.50', category: 'Postres', available: true },
-];
-
 export default function MenuEditorPage() {
-  const [cats, setCats] = useState(categories);
-  const [activeCat, setActiveCat] = useState('Bebidas Calientes');
-  const [items, setItems] = useState(initialItems);
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [cats, setCats] = useState<any[]>([]);
+  const [activeCat, setActiveCat] = useState<any>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<any>(null);
 
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [newCatName, setNewCatName] = useState('');
+  const [isSavingCat, setIsSavingCat] = useState(false);
 
   // Drag and Drop State
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverItem, setDragOverItem] = useState<any>(null);
 
+  useEffect(() => {
+    async function loadMenu() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: store } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('owner_email', session.user.email)
+        .single();
+        
+      if (store) {
+        setStoreId(store.id);
+        
+        // Cargar Categorías
+        const { data: categories } = await supabase
+          .from('menu_categories')
+          .select('*')
+          .eq('store_id', store.id)
+          .order('order_index', { ascending: true });
+          
+        if (categories && categories.length > 0) {
+          setCats(categories);
+          setActiveCat(categories[0]);
+        }
+        
+        // Cargar Items
+        const { data: products } = await supabase
+          .from('menu_items')
+          .select('*')
+          .in('category_id', categories ? categories.map(c => c.id) : []);
+          
+        if (products) {
+          setItems(products);
+        }
+      }
+      setIsLoading(false);
+    }
+    loadMenu();
+  }, []);
+
   // Handlers
-  const handleSaveProduct = () => {
-    if (editingProduct.id) {
-      setItems(items.map(i => i.id === editingProduct.id ? editingProduct : i));
-    } else {
-      setItems([...items, { ...editingProduct, id: Date.now() }]);
+  const handleSaveProduct = async () => {
+    if (!editingProduct.name || !editingProduct.price) return;
+    setIsSavingProduct(true);
+    
+    const payload = {
+      category_id: activeCat.id,
+      name: editingProduct.name,
+      price: parseFloat(editingProduct.price),
+      is_available: editingProduct.is_available
+    };
+
+    try {
+      if (editingProduct.id) {
+        await supabase.from('menu_items').update(payload).eq('id', editingProduct.id);
+        setItems(items.map(i => i.id === editingProduct.id ? { ...i, ...payload } : i));
+      } else {
+        const { data } = await supabase.from('menu_items').insert(payload).select().single();
+        if (data) setItems([...items, data]);
+      }
+      setIsProductModalOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert('Error guardando producto');
     }
-    setIsProductModalOpen(false);
+    setIsSavingProduct(false);
   };
 
-  const confirmDelete = () => {
-    setItems(items.filter(i => i.id !== productToDelete.id));
-    setIsDeleteModalOpen(false);
-    setProductToDelete(null);
-  };
-
-  const handleSaveCategory = () => {
-    if (newCatName.trim()) {
-      setCats([...cats, newCatName.trim()]);
-      setActiveCat(newCatName.trim());
-      setNewCatName('');
+  const confirmDelete = async () => {
+    try {
+      await supabase.from('menu_items').delete().eq('id', productToDelete.id);
+      setItems(items.filter(i => i.id !== productToDelete.id));
+      setIsDeleteModalOpen(false);
+      setProductToDelete(null);
+    } catch (e) {
+      console.error(e);
+      alert('Error al borrar');
     }
-    setIsCatModalOpen(false);
   };
 
-  const handleDragStart = (e: React.DragEvent, item: any) => {
-    setDraggedItem(item);
+  const handleSaveCategory = async () => {
+    if (newCatName.trim() && storeId) {
+      setIsSavingCat(true);
+      try {
+        const { data } = await supabase.from('menu_categories').insert({
+          store_id: storeId,
+          name: newCatName.trim(),
+          order_index: cats.length
+        }).select().single();
+        
+        if (data) {
+          setCats([...cats, data]);
+          setActiveCat(data);
+          setNewCatName('');
+        }
+        setIsCatModalOpen(false);
+      } catch (e) {
+        console.error(e);
+        alert('Error al crear categoría');
+      }
+      setIsSavingCat(false);
+    }
   };
 
-  const handleDragEnter = (e: React.DragEvent, item: any) => {
-    e.preventDefault();
-    setDragOverItem(item);
+  const toggleAvailability = async (item: any) => {
+    const newStatus = !item.is_available;
+    setItems(items.map(i => i.id === item.id ? { ...i, is_available: newStatus } : i));
+    await supabase.from('menu_items').update({ is_available: newStatus }).eq('id', item.id);
   };
 
+  // Drag logic (solo UI por ahora)
+  const handleDragStart = (e: React.DragEvent, item: any) => setDraggedItem(item);
+  const handleDragEnter = (e: React.DragEvent, item: any) => { e.preventDefault(); setDragOverItem(item); };
   const handleDragEnd = (e: React.DragEvent) => {
     if (draggedItem && dragOverItem && draggedItem.id !== dragOverItem.id) {
       const draggedIdx = items.findIndex(i => i.id === draggedItem.id);
       const overIdx = items.findIndex(i => i.id === dragOverItem.id);
-      
       const newItems = [...items];
       const [dragged] = newItems.splice(draggedIdx, 1);
       newItems.splice(overIdx, 0, dragged);
-      
       setItems(newItems);
     }
     setDraggedItem(null);
     setDragOverItem(null);
   };
+
+  if (isLoading) return <div>Cargando Menú...</div>;
 
   return (
     <>
@@ -90,8 +168,9 @@ export default function MenuEditorPage() {
         <Button 
           leftIcon={<Plus size={18} />} 
           variant="secondary"
+          disabled={!activeCat}
           onClick={() => {
-            setEditingProduct({ name: '', price: '', category: activeCat, available: true });
+            setEditingProduct({ name: '', price: '', category_id: activeCat?.id, is_available: true });
             setIsProductModalOpen(true);
           }}
         >
@@ -108,19 +187,20 @@ export default function MenuEditorPage() {
           <div className={styles.catList}>
             {cats.map(cat => (
               <button 
-                key={cat}
+                key={cat.id}
                 onClick={() => setActiveCat(cat)}
-                className={`${styles.catButton} ${activeCat === cat ? styles.catActive : ''}`}
+                className={`${styles.catButton} ${activeCat?.id === cat.id ? styles.catActive : ''}`}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
+            {cats.length === 0 && <div className="text-gray-500 text-sm mt-4">Añade una categoría para empezar</div>}
           </div>
         </div>
 
         <div className={styles.mainContent}>
           <div className={styles.itemsList}>
-            {items.filter(i => i.category === activeCat).map(item => (
+            {items.filter(i => i.category_id === activeCat?.id).map(item => (
               <div 
                 key={item.id} 
                 className={`${styles.itemRow} ${draggedItem?.id === item.id ? styles.dragging : ''}`}
@@ -146,11 +226,9 @@ export default function MenuEditorPage() {
                 <div className={styles.itemActions}>
                   <div 
                     className={styles.toggleWrapper}
-                    onClick={() => {
-                      setItems(items.map(i => i.id === item.id ? { ...i, available: !i.available } : i));
-                    }}
+                    onClick={() => toggleAvailability(item)}
                   >
-                    <div className={`${styles.toggleTrack} ${item.available ? styles.toggleTrackActive : ''}`}>
+                    <div className={`${styles.toggleTrack} ${item.is_available ? styles.toggleTrackActive : ''}`}>
                       <div className={styles.toggleThumb}></div>
                     </div>
                     <span className={styles.toggleLabel}>Disponible</span>
@@ -179,6 +257,9 @@ export default function MenuEditorPage() {
                 </div>
               </div>
             ))}
+            {activeCat && items.filter(i => i.category_id === activeCat.id).length === 0 && (
+              <div className="text-center py-10 text-gray-500">No hay productos en esta categoría.</div>
+            )}
           </div>
         </div>
       </div>
@@ -217,20 +298,20 @@ export default function MenuEditorPage() {
               <label className={styles.label}>Estado</label>
               <div 
                 className={styles.toggleWrapper}
-                onClick={() => setEditingProduct({...editingProduct, available: !editingProduct?.available})}
+                onClick={() => setEditingProduct({...editingProduct, is_available: !editingProduct?.is_available})}
               >
-                <div className={`${styles.toggleTrack} ${editingProduct?.available ? styles.toggleTrackActive : ''}`}>
+                <div className={`${styles.toggleTrack} ${editingProduct?.is_available ? styles.toggleTrackActive : ''}`}>
                   <div className={styles.toggleThumb}></div>
                 </div>
                 <span className={styles.toggleLabel}>
-                  {editingProduct?.available ? 'Disponible' : 'Agotado'}
+                  {editingProduct?.is_available ? 'Disponible' : 'Agotado'}
                 </span>
               </div>
             </div>
 
             <div className={styles.modalActions}>
               <Button variant="ghost" onClick={() => setIsProductModalOpen(false)}>Cancelar</Button>
-              <Button variant="secondary" onClick={handleSaveProduct}>Guardar</Button>
+              <Button variant="secondary" onClick={handleSaveProduct} isLoading={isSavingProduct}>Guardar</Button>
             </div>
           </div>
         </div>
@@ -274,7 +355,7 @@ export default function MenuEditorPage() {
             </div>
             <div className={styles.modalActions}>
               <Button variant="ghost" onClick={() => setIsCatModalOpen(false)}>Cancelar</Button>
-              <Button variant="secondary" onClick={handleSaveCategory} disabled={!newCatName.trim()}>
+              <Button variant="secondary" onClick={handleSaveCategory} isLoading={isSavingCat} disabled={!newCatName.trim()}>
                 Guardar
               </Button>
             </div>

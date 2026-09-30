@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
 import { 
   LayoutDashboard, 
@@ -16,7 +16,7 @@ import {
   Coffee
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
-import { useAuthStore } from '@/lib/stores/authStore';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -29,7 +29,12 @@ const navItems = [
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
-  const logout = useAuthStore(state => state.logout);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   return (
     <>
@@ -65,12 +70,18 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           })}
         </nav>
 
-        <div className={styles.footer}>
-          <Link href="/settings" className={styles.settingsBtn}>
-            <Settings className={styles.icon} style={{ marginRight: '8px' }} />
-            Ajustes
+        <div className={styles.footer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <Link href="/settings" className={styles.settingsBtn} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s', padding: '8px', borderRadius: '8px' }}>
+            <Settings size={18} />
+            <span>Ajustes</span>
           </Link>
-          <button onClick={logout} className="p-2 text-white/50 hover:text-[#E88B2E] transition-colors" title="Cerrar sesión">
+          <button 
+            onClick={handleLogout} 
+            title="Cerrar sesión"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,0,0,0.1)', color: '#ff4d4f', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,0,0,0.2)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,0,0,0.1)'}
+          >
             <LogOut size={18} />
           </button>
         </div>

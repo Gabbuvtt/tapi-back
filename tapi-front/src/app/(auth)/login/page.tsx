@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { authApi } from '@/lib/api/auth';
+import { supabase } from '@/lib/supabase';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -13,34 +14,22 @@ export default function LoginPage() {
   const setUser = useAuthStore((state) => state.setUser);
 
   const handleGoogleLogin = async () => {
-    // Aquí integraremos el popup real de Google OAuth.
-    // Por ahora simularemos el flujo para conectar con el backend.
     setIsLoading(true);
-    
     try {
-      // TODO: Reemplazar con token real de @react-oauth/google
-      const fakeGoogleToken = "dummy-token"; 
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`, // Vuelve al dashboard tras el login
+        },
+      });
       
-      // Llamada real al backend (fallará hasta configurar CORS y OAuth)
-      // const response = await authApi.googleLogin(fakeGoogleToken);
-      
-      // Simulación de éxito por ahora para avanzar en UI
-      setTimeout(() => {
-        localStorage.setItem('access_token', 'fake-jwt');
-        setUser({
-          id: '1',
-          email: 'admin@tapi.com',
-          full_name: 'Admin TAPI',
-          role: 'business_owner',
-          is_active: true,
-          created_at: new Date().toISOString()
-        });
-        router.push('/dashboard');
-      }, 1500);
-
+      if (error) {
+        throw error;
+      }
     } catch (error) {
       console.error('Login failed', error);
       setIsLoading(false);
+      alert('Hubo un error al iniciar sesión. Verifica tu conexión.');
     }
   };
 
