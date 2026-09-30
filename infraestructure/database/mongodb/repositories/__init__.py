@@ -1,1 +1,0 @@
-"""MongoDB repository implementations package."""
