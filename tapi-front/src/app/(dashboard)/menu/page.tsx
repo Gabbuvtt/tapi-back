@@ -79,7 +79,9 @@ export default function MenuEditorPage() {
       category_id: activeCat.id,
       name: editingProduct.name,
       price: parseFloat(editingProduct.price),
-      is_available: editingProduct.is_available
+      is_available: editingProduct.is_available,
+      description: editingProduct.description || null,
+      image_url: editingProduct.image_url || null
     };
 
     try {
@@ -170,7 +172,7 @@ export default function MenuEditorPage() {
           variant="secondary"
           disabled={!activeCat}
           onClick={() => {
-            setEditingProduct({ name: '', price: '', category_id: activeCat?.id, is_available: true });
+            setEditingProduct({ name: '', price: '', description: '', image_url: '', category_id: activeCat?.id, is_available: true });
             setIsProductModalOpen(true);
           }}
         >
@@ -214,8 +216,12 @@ export default function MenuEditorPage() {
                   <div className={styles.dragHandle}>
                     <GripVertical size={20} />
                   </div>
-                  <div className={styles.imagePlaceholder}>
-                    <ImageIcon size={24} strokeWidth={1.5} />
+                  <div className={styles.imagePlaceholder} style={{ overflow: 'hidden' }}>
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <ImageIcon size={24} strokeWidth={1.5} />
+                    )}
                   </div>
                   <div className={styles.itemInfo}>
                     <div className={styles.itemName}>{item.name}</div>
@@ -291,6 +297,28 @@ export default function MenuEditorPage() {
                 value={editingProduct?.price || ''}
                 onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
                 placeholder="0.00" 
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Descripción (Opcional)</label>
+              <textarea 
+                className={styles.input} 
+                value={editingProduct?.description || ''}
+                onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
+                placeholder="Ej. Delicioso latte con leche de almendras"
+                style={{ resize: 'vertical', minHeight: '60px' }}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>URL de la Imagen (Opcional)</label>
+              <input 
+                type="url" 
+                className={styles.input} 
+                value={editingProduct?.image_url || ''}
+                onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
+                placeholder="https://ejemplo.com/imagen.jpg" 
               />
             </div>
 

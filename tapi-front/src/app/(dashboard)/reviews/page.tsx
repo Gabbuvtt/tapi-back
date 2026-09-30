@@ -16,8 +16,55 @@ function getBadgeClass(status: string) {
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
+  const [filteredReviews, setFilteredReviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, average: 0, googleCount: 0 });
+  const [typeFilter, setTypeFilter] = useState('Todas');
+  const [dateFilter, setDateFilter] = useState('30dias');
+
+  // Lógica de filtrado local
+  useEffect(() => {
+    let result = [...reviews];
+    
+    // Filtrar por tipo
+    if (typeFilter === 'Google') {
+      result = result.filter(r => r.status === 'Google');
+    } else if (typeFilter === 'Internas') {
+      result = result.filter(r => r.status === 'Interna');
+    }
+
+    // Filtrar por fecha
+    const now = new Date();
+    if (dateFilter === 'hoy') {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      result = result.filter(r => new Date(r.created_at) >= today);
+    } else if (dateFilter === 'semana') {
+      const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      result = result.filter(r => new Date(r.created_at) >= lastWeek);
+    } else if (dateFilter === 'mes') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      result = result.filter(r => new Date(r.created_at) >= startOfMonth);
+    } else if (dateFilter === '30dias') {
+      const last30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      result = result.filter(r => new Date(r.created_at) >= last30);
+    }
+
+    setFilteredReviews(result);
+
+    // Actualizar Stats basados en el filtro actual
+    let sum = 0;
+    let googleC = 0;
+    result.forEach(r => {
+      sum += r.rating;
+      if (r.status === 'Google') googleC++;
+    });
+    
+    setStats({
+      total: result.length,
+      average: result.length > 0 ? (sum / result.length) : 0,
+      googleCount: googleC
+    });
+  }, [reviews, typeFilter, dateFilter]);
 
   useEffect(() => {
     async function loadReviews() {
@@ -39,19 +86,6 @@ export default function ReviewsPage() {
           
         if (reviewData) {
           setReviews(reviewData);
-          
-          let sum = 0;
-          let googleC = 0;
-          reviewData.forEach(r => {
-            sum += r.rating;
-            if (r.status === 'Google') googleC++;
-          });
-          
-          setStats({
-            total: reviewData.length,
-            average: reviewData.length > 0 ? (sum / reviewData.length) : 0,
-            googleCount: googleC
-          });
         }
       }
       setIsLoading(false);
@@ -86,25 +120,27 @@ export default function ReviewsPage() {
 
       <div className={styles.filters}>
         <div className={styles.selectWrapper}>
-          <select className={styles.select}>
-            <option>Todas las reseñas</option>
-            <option>Enviadas a Google (5★ y 4★)</option>
-            <option>Internas (1★ a 3★)</option>
-            <option>Pendientes de revisión</option>
+          <select className={styles.select} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <option value="Todas">Todas las reseñas</option>
+            <option value="Google">Enviadas a Google (5★ y 4★)</option>
+            <option value="Internas">Internas (1★ a 3★)</option>
           </select>
           <ChevronDown size={14} className={styles.selectIcon} />
         </div>
         <div className={styles.selectWrapper}>
-          <select className={styles.select}>
-            <option>Últimos 30 días</option>
-            <option>Este mes</option>
+          <select className={styles.select} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+            <option value="siempre">Siempre</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Esta semana (7 días)</option>
+            <option value="mes">Este mes actual</option>
+            <option value="30dias">Últimos 30 días</option>
           </select>
           <ChevronDown size={14} className={styles.selectIcon} />
         </div>
       </div>
 
       <div className={styles.reviewsList}>
-        {reviews.length > 0 ? reviews.map(review => (
+        {filteredReviews.length > 0 ? filteredReviews.map(review => (
           <div key={review.id} className={styles.reviewCard}>
             <div className={styles.reviewHeader}>
               <div className={styles.userInfo}>

@@ -76,7 +76,6 @@
 }
 
 .loyaltyCard {
-  aspect-ratio: 1.586;
   background: linear-gradient(135deg, #1b3a5c 0%, #0a1622 100%);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);

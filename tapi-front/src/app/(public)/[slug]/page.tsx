@@ -5,7 +5,8 @@ import { Coffee, Star, MapPin, MenuSquare, Gift } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './client.module.css';
 
-export default function ClientViewPage({ params }: { params: { slug: string } }) {
+export default function ClientViewPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = React.use(params);
   const [user, setUser] = useState<any>(null);
   const [customerData, setCustomerData] = useState<any>(null);
   const [phoneInput, setPhoneInput] = useState('');
@@ -13,6 +14,10 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
   const [totalRequired, setTotalRequired] = useState(10);
   const [shopName, setShopName] = useState('Cargando...');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Estados para el Menú
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
   // Estados para las reseñas
   const [rating, setRating] = useState(0);
@@ -36,7 +41,7 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
       const { data: storeInfo } = await supabase
         .from('stores')
         .select('id, google_review_url')
-        .eq('slug', params.slug)
+        .eq('slug', slug)
         .single();
         
       if (storeInfo) {
@@ -50,7 +55,7 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
         
         // 2. Filtro inteligente (Review Gating)
         if (rating >= 4 && storeInfo.google_review_url) {
-          window.open(storeInfo.google_review_url, '_blank');
+          window.location.href = storeInfo.google_review_url;
         }
       }
       
@@ -69,15 +74,23 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
       const { data: cardData } = await supabase
         .from('stores')
         .select(`
+          id,
           name,
           loyalty_programs ( stamps_required )
         `)
-        .eq('slug', params.slug)
+        .eq('slug', slug)
         .single();
 
       if (cardData) {
         setShopName(cardData.name);
         setTotalRequired(cardData.loyalty_programs?.[0]?.stamps_required || 10);
+        
+        // Cargar el Menú
+        const { data: items } = await supabase
+          .from('menu_items')
+          .select('*, menu_categories!inner(store_id, name)')
+          .eq('menu_categories.store_id', cardData.id);
+        setMenuItems(items || []);
       }
 
       // 2. Revisar si hay sesión de Google activa
@@ -86,23 +99,31 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
       if (session?.user) {
         setUser(session.user);
         
-        // Registrar al usuario invisiblemente en nuestra BD y recuperar sus datos
-        const { data: customer } = await supabase.from('customers').upsert({
-          auth_id: session.user.id,
-          email: session.user.email,
-          full_name: session.user.user_metadata?.full_name,
-          avatar_url: session.user.user_metadata?.avatar_url
-        }, { onConflict: 'email' }).select().single();
+        // Intentar recuperar el customer existente por email sin hacer upsert
+        const { data: customer } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('email', session.user.email)
+          .single();
         
         setCustomerData(customer);
         
-        // Simular que el cliente ya tiene algunos sellos para el demo (esto se haría consultando 'loyalty_cards')
-        setStamps(3);
+        // Consultar los sellos reales del cliente para esta tienda
+        if (customer && cardData) {
+          const { data: loyaltyCard } = await supabase
+            .from('loyalty_cards')
+            .select('current_stamps')
+            .eq('customer_id', customer.id)
+            .eq('store_id', cardData.id)
+            .single();
+            
+          setStamps(loyaltyCard?.current_stamps || 0);
+        }
       }
       setIsLoading(false);
     }
     init();
-  }, [params.slug]);
+  }, [slug]);
 
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -114,14 +135,19 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
   const savePhoneNumber = async () => {
     if (!phoneInput || phoneInput.length < 8) return;
     
-    const { data } = await supabase.from('customers')
-      .update({ phone_number: phoneInput })
-      .eq('email', user.email)
-      .select()
-      .single();
+    // Insertar el nuevo cliente en la BD
+    const { data, error } = await supabase.from('customers').insert({
+      auth_id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name || 'Cliente',
+      phone_number: phoneInput
+    }).select().single();
       
     if (data) {
       setCustomerData(data);
+    } else {
+      console.error(error);
+      alert('Error al guardar el teléfono. Es posible que este número ya esté registrado.');
     }
   };
 
@@ -171,7 +197,7 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
     );
   }
 
-  if (user && customerData && !customerData.phone_number) {
+  if (user && (!customerData || !customerData.phone_number)) {
     return (
       <div className={styles.container}>
         <div className={styles.mobileWrapper} style={{ justifyContent: 'center', padding: '24px' }}>
@@ -236,9 +262,9 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
             <div className={styles.loyaltyCard}>
               <div className={styles.cardGlow}></div>
               
-              <div className="relative z-10 flex items-center gap-2 mb-2">
-                <Coffee className="text-[var(--color-secondary)]" size={24} />
-                <span className="text-white font-bold text-lg tracking-tight">El Aroma Club</span>
+              <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+                <Gift className="text-[var(--color-secondary)]" size={24} />
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', letterSpacing: '-0.02em' }}>{shopName} Rewards</span>
               </div>
 
               <div className={styles.stampGrid}>
@@ -249,7 +275,7 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
                   return (
                     <div key={index} className={`${styles.stamp} ${isDone ? styles.stampDone : styles.stampPending}`}>
                       {isDone ? (
-                        <Coffee size={16} />
+                        <Star size={16} />
                       ) : isGift ? (
                         <Gift size={16} />
                       ) : (
@@ -262,17 +288,21 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
 
               <div className={styles.cardFooter}>
                 <div className={styles.progressText}>
-                  Estás a <span>{remaining} cafés</span> de tu bebida gratis.
+                  Estás a <span>{remaining} visitas</span> de tu recompensa gratis.
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <a href="#" className={styles.menuBtn}>
+          <button 
+            onClick={(e) => { e.preventDefault(); setIsMenuOpen(true); }} 
+            className={styles.menuBtn}
+            style={{ cursor: 'pointer' }}
+          >
             <MenuSquare size={18} />
             Ver Menú Digital
-          </a>
+          </button>
 
           {/* Review Gating Section */}
           <div className={styles.reviewCard}>
@@ -338,6 +368,46 @@ export default function ClientViewPage({ params }: { params: { slug: string } })
 
         </div>
       </div>
+
+      {/* MODAL DEL MENÚ DIGITAL */}
+      {isMenuOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 999, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', animation: 'fadeIn 0.2s ease-in-out' }}>
+          <div style={{ width: '100%', maxWidth: '480px', backgroundColor: 'var(--color-bg)', height: '85vh', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'slideUp 0.3s ease-in-out' }}>
+            <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>Menú de {shopName}</h2>
+              <button onClick={() => setIsMenuOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {menuItems.length === 0 ? (
+                <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', marginTop: '40px' }}>No hay productos disponibles por ahora.</p>
+              ) : (
+                menuItems.map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div>
+                      <h4 style={{ color: 'white', fontWeight: 'bold', margin: 0 }}>{item.name}</h4>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', marginTop: '4px', marginBottom: '8px' }}>
+                        {item.menu_categories?.name || 'General'}
+                      </p>
+                      {item.description && (
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.4, margin: 0 }}>{item.description}</p>
+                      )}
+                    </div>
+                    <div style={{ color: 'var(--color-secondary)', fontWeight: 'bold', fontSize: '16px', marginLeft: '16px' }}>
+                      ${Number(item.price).toFixed(2)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <style>{`
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          `}</style>
+        </div>
+      )}
+
     </div>
   );
 }

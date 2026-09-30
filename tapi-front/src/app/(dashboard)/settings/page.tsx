@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [googleUrl, setGoogleUrl] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
 
   useEffect(() => {
     async function loadData() {
@@ -32,11 +33,52 @@ export default function SettingsPage() {
         setName(data.name || '');
         setAddress('Av. Principal 123, Centro'); // Placeholder, since it's not in DB yet
         setGoogleUrl(data.google_review_url || '');
+        setLogoUrl(data.logo_url || '');
       }
       setIsLoading(false);
     }
     loadData();
   }, []);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Redimensionar para no sobrecargar la base de datos (Max 512x512)
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 512;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convertir a Base64 (webp es más ligero)
+        const base64String = canvas.toDataURL('image/webp', 0.8);
+        setLogoUrl(base64String);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +89,8 @@ export default function SettingsPage() {
         .from('stores')
         .update({
           name: name,
-          google_review_url: googleUrl
+          google_review_url: googleUrl,
+          logo_url: logoUrl
         })
         .eq('id', storeData.id);
 
@@ -74,13 +117,28 @@ export default function SettingsPage() {
 
       <div className={styles.card}>
         <div className={styles.logoSection}>
-          <div className={styles.logoPlaceholder}>
-            <Store size={32} />
+          <div className={styles.logoPlaceholder} style={{ overflow: 'hidden' }}>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <Store size={32} />
+            )}
           </div>
-          <div>
+          <div style={{ flex: 1 }}>
             <h3 className={styles.logoTitle}>Logo del Comercio</h3>
-            <p className={styles.logoSubtitle}>Recomendado: 512x512px. JPG o PNG.</p>
-            <Button variant="outline" size="sm">Subir Imagen</Button>
+            <p className={styles.logoSubtitle} style={{ marginBottom: '12px' }}>Sube el logo de tu marca desde tu computadora.</p>
+            
+            <label className={styles.actionBtn} style={{ padding: '8px 16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '6px', cursor: 'pointer', display: 'inline-block', fontSize: '14px', fontWeight: 500 }}>
+              Seleccionar Imagen
+              <input 
+                type="file" 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+                onChange={handleImageUpload}
+                onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
+              />
+            </label>
+            {logoUrl && <button type="button" onClick={() => setLogoUrl('')} style={{ marginLeft: '12px', fontSize: '14px', color: 'var(--color-error)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>Eliminar</button>}
           </div>
         </div>
 

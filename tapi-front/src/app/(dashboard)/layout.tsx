@@ -24,11 +24,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
 
       // Validar si el correo de este usuario es dueño de alguna tienda
-      const { data: store } = await supabase
+      let { data: store } = await supabase
         .from('stores')
         .select('*')
         .eq('owner_email', session.user.email)
         .single();
+
+      // Auto-crear tienda si es un usuario nuevo
+      if (!store) {
+        const slugBase = session.user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const { data: newStore } = await supabase.from('stores').insert({
+          name: 'Mi Nueva Tienda',
+          slug: slugBase + '-' + Math.floor(Math.random() * 1000),
+          owner_email: session.user.email,
+          owner_id: session.user.id,
+          is_onboarded: false
+        }).select().single();
+        
+        store = newStore;
+      }
 
       if (store) {
         setUserStore(store);
@@ -94,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       />
       
       <div className={styles.mainWrapper}>
-        <Topbar onMenuClick={() => setIsSidebarOpen(true)} storeName={userStore.name} />
+        <Topbar onMenuClick={() => setIsSidebarOpen(true)} storeName={userStore.name} storeId={userStore.id} />
         <main className={styles.content}>
           {children}
         </main>
