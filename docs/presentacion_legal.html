@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación y Términos Legales - TAPI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 40px; background-color: #f9fafb; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 50px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .header { text-align: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 30px; margin-bottom: 40px; }
+        .logo { font-size: 40px; font-weight: 700; color: #111827; letter-spacing: -1px; }
+        .subtitle { font-size: 18px; color: #6b7280; margin-top: 10px; }
+        h1 { font-size: 24px; color: #111827; margin-bottom: 15px; margin-top: 40px; }
+        h2 { font-size: 18px; color: #374151; margin-top: 25px; margin-bottom: 10px; font-weight: 600; }
+        p { color: #4b5563; font-size: 14px; text-align: justify; }
+        .legal-section { background-color: #f8fafc; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 30px; }
+        .legal-section h2 { margin-top: 0; color: #0f172a; }
+        ul { color: #4b5563; font-size: 14px; padding-left: 20px; }
+        li { margin-bottom: 6px; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">TAPI</div>
+            <div class="subtitle">Presentación Ejecutiva y Términos de Servicio</div>
+        </div>
+
+        <h1>1. Sobre TAPI</h1>
+        <p>TAPI es una plataforma tecnológica B2B diseñada para revolucionar la forma en que los establecimientos gastronómicos interactúan con sus clientes. A través de tecnología NFC (Near Field Communication) y un backend robusto de alta escalabilidad, proporcionamos una solución sin fricción para la captación de reseñas, gestión de programas de lealtad y análisis de datos en tiempo real.</p>
+        
+        <h2>Infraestructura Tecnológica</h2>
+        <p>Nuestro ecosistema está garantizado para ofrecer alta disponibilidad y seguridad:</p>
+        <ul>
+            <li><strong>Core API:</strong> Desarrollada en FastAPI para respuestas ultra rápidas.</li>
+            <li><strong>Bases de Datos:</strong> Arquitectura híbrida con PostgreSQL (datos transaccionales) y MongoDB (analítica de eventos).</li>
+            <li><strong>Caché y Tareas Asíncronas:</strong> Redis y Celery garantizan que las notificaciones y los cálculos de fidelización operen en segundo plano sin retrasos.</li>
+            <li><strong>Seguridad:</strong> Autenticación cifrada, protocolos HTTPS y protección de datos mediante JWT.</li>
+        </ul>
+
+        <div class="legal-section">
+            <h2>2. Términos Legales y Condiciones de Servicio (SaaS)</h2>
+            <p>Al contratar los servicios de TAPI ("El Proveedor"), el Cliente ("El Establecimiento") acepta los siguientes términos legales aplicables en <strong>[PAÍS/JURISDICCIÓN]</strong>.</p>
+
+            <h2>2.1. Acuerdo de Nivel de Servicio (SLA)</h2>
+            <p>TAPI se compromete a mantener un tiempo de actividad (uptime) del 99.9% mensual. El mantenimiento programado se notificará con al menos 48 horas de anticipación y se realizará fuera de horas pico. En caso de caídas del servicio atribuibles a TAPI que superen el 1% del tiempo mensual, el Cliente será elegible para créditos de servicio proporcionales.</p>
+
+            <h2>2.2. Privacidad y Protección de Datos</h2>
+            <p>TAPI actúa como <em>Procesador de Datos</em> y el Cliente como <em>Controlador de Datos</em>. Cumplimos con las normativas vigentes de protección de datos personales. Los datos recabados de los comensales (ej. correos, nombres, historiales de visitas) son encriptados y no serán compartidos, vendidos o alquilados a terceros bajo ninguna circunstancia. El Cliente tiene la responsabilidad de informar a sus usuarios sobre el uso de la plataforma a través de un aviso de privacidad visible en el establecimiento.</p>
+
+            <h2>2.3. Propiedad Intelectual y Hardware</h2>
+            <p>El software, plataforma, algoritmos y marca TAPI son propiedad exclusiva de TAPI Technologies. El Hardware NFC proporcionado al Cliente se otorga en calidad de comodato (préstamo de uso) o venta directa, según lo estipulado en la cotización. El mal uso o daño físico intencional del hardware en comodato incurrirá en cargos de reposición.</p>
+
+            <h2>2.4. Limitación de Responsabilidad</h2>
+            <p>TAPI no se hace responsable por daños indirectos, lucro cesante o pérdidas derivadas del uso de la plataforma, incluyendo pero no limitado a fallas en el proveedor de internet del restaurante, o la naturaleza de las reseñas públicas emitidas por los usuarios finales en plataformas de terceros (Google, TripAdvisor).</p>
+
+            <h2>2.5. Términos de Pago y Cancelación</h2>
+            <ul>
+                <li>La facturación se realiza de manera [MENSUAL/ANUAL] por adelantado.</li>
+                <li>Los pagos atrasados por más de 15 días naturales podrán resultar en la suspensión temporal del servicio.</li>
+                <li>El Cliente puede cancelar su suscripción en cualquier momento con un aviso previo de 30 días, sin penalizaciones ocultas. Al cancelar, el Cliente podrá solicitar una exportación de su base de datos de usuarios fidelizados.</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            Versión del Documento: 1.0 | TAPI Technologies | [DIRECCIÓN LEGAL] | contacto@tapi.app
+        </div>
+    </div>
+</body>
+</html>
