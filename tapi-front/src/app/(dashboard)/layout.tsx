@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     async function checkAuthAndStore() {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session?.user) {
+      if (!session?.user || !session.user.email) {
         router.push('/login');
         return;
       }
